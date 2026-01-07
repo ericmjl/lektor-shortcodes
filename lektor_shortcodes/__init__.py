@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
+"""Lektor Shortcodes plugin for custom shortcode support."""
+
 import itertools
 import re
+from typing import Any, Callable, Optional, Union
 
-from jinja2 import Environment
-from jinja2 import Template
+from jinja2 import Environment, Template
 from lektor.markdown import Markdown
 from lektor.pluginsystem import Plugin
 from markupsafe import Markup
@@ -13,21 +14,26 @@ from . import scodes
 
 
 class ShortcodeLexer(BlockLexer):
-    def __init__(self, config, *, env=None):
+    """Custom lexer for processing shortcodes in markdown."""
+
+    def __init__(self, config: Any, *, env: Optional[Any] = None) -> None:
         BlockLexer.__init__(self)
         if env is None:
             env = Environment
         self._init_shortcodes_compiler(config, env)
         self._init_shortcodes_lexer()
 
-    def _init_shortcodes_lexer(self):
+    def _init_shortcodes_lexer(self) -> None:
+        """Initialize the shortcode lexer rules."""
         self.rules.shortcode = re.compile(r"(\[% .+? %\])")
         self.default_rules.insert(1, "shortcode")
 
-    def _init_shortcodes_compiler(self, config, env):
+    def _init_shortcodes_compiler(self, config: Any, env: Any) -> None:
+        """Initialize the shortcode compiler."""
         self.compile = shortcode_factory(config, env=env)
 
-    def parse_shortcode(self, match):
+    def parse_shortcode(self, match: Any) -> None:
+        """Parse a shortcode match and add it to tokens."""
         text = match.group(1)
         self.tokens.append(
             {
@@ -37,18 +43,30 @@ class ShortcodeLexer(BlockLexer):
         )
 
 
-def shortcode_factory(config, *, ctx=None, env=None):
+def shortcode_factory(
+    config: Any, *, ctx: Optional[dict[str, Any]] = None, env: Optional[Any] = None
+) -> Callable[..., Any]:
     """
     Return a new shortcode factory.
 
-    ctx is the original context (containing `this`, `site`, etc), and `config`
-    is the configuration from the config ini file.
-    """
+    Args:
+        config: The configuration from the config ini file
+        ctx: The original context (containing `this`, `site`, etc)
+        env: Jinja2 environment for template rendering
 
+    Returns:
+        A shortcode processing function
+    """
     if ctx is None:
         ctx = {}
 
-    def shortcodes(text, *, context=None, **options):
+    def shortcodes(
+        text: Union[str, Markdown, Markup],
+        *,
+        context: Optional[dict[str, Any]] = None,
+        **options: Any,
+    ) -> Union[str, Markdown, Markup]:
+        """Process shortcodes in the given text."""
         if context is not None:
             ctx.update(context)
         if env is None:
@@ -56,15 +74,17 @@ def shortcode_factory(config, *, ctx=None, env=None):
         else:
             template = env.from_string
         sections = ("global", options.get("section", "main"))
-        shortcodes = itertools.chain(
+        shortcodes_iter = itertools.chain(
             *(config.section_as_dict(section).items() for section in sections)
         )
 
         parser = scodes.Parser()
-        for item, conf in shortcodes:
+        for item, conf in shortcodes_iter:
             # Make a closure so the correct config object passes through.
-            def handler_closure(cconf):
-                def handler(context, content, pargs, kwargs):
+            def handler_closure(cconf: str) -> Callable[..., str]:
+                def handler(
+                    context: Any, content: Any, pargs: Any, kwargs: dict[str, Any]
+                ) -> str:
                     kwargs.update(ctx)
                     return template(cconf).render(kwargs)
 
@@ -84,21 +104,28 @@ def shortcode_factory(config, *, ctx=None, env=None):
 
 
 class ShortcodesPlugin(Plugin):
+    """Lektor plugin for shortcode support."""
+
     name = "lektor-shortcodes"
     description = "Shortcodes for Lektor."
 
-    def on_process_template_context(self, context, **extra):
+    def on_process_template_context(
+        self, context: dict[str, Any], **extra: Any
+    ) -> None:
+        """Add shortcodes filter to Jinja2 environment."""
         if "shortcodes" not in self.env.jinja_env.filters:
             self.env.jinja_env.filters["shortcodes"] = shortcode_factory(
                 self.get_config(), ctx=context, env=self.env.jinja_env
             )
 
-    def on_markdown_config(self, config, **extra):
+    def on_markdown_config(self, config: Any, **extra: Any) -> None:
+        """Configure markdown processing to use shortcode lexer."""
         shortcodes_config = self.get_config()
         self.lexer = ShortcodeLexer(shortcodes_config, env=self.env.jinja_env)
         config.options["block"] = self.lexer
 
-    def on_markdown_meta_init(self, meta, **extra):
+    def on_markdown_meta_init(self, meta: Any, **extra: Any) -> None:
+        """Initialize markdown metadata with context."""
         context = {"this": extra["record"]}
         if extra["record"]:
             context["site"] = extra["record"].pad
