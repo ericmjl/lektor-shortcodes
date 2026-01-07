@@ -34,11 +34,29 @@ Much easier, cleaner and less repetitive.
 Installation
 ------------
 
+### Using Lektor (Recommended)
+
 To install the plugin, just add `lektor-shortcodes` to your plugins from the
 command line:
 
 ~~~
 lektor plugins add lektor-shortcodes
+~~~
+
+### Using pip
+
+You can also install directly with pip:
+
+~~~
+pip install lektor-shortcodes
+~~~
+
+### Using uv (Development)
+
+For development, you can use uv to manage dependencies:
+
+~~~
+uv pip install -e .[dev]
 ~~~
 
 
@@ -90,6 +108,61 @@ the section named `main` (so it will include shortcodes in `main` unless you
 request a different section, and it will always include shortcodes in `global` no
 matter what).
 
+
+Development
+-----------
+
+This project uses modern Python tooling:
+
+- **uv** for fast package management
+- **hatch** for building and packaging
+- **ruff** for linting and formatting
+- **mypy** for type checking
+- **pytest** for testing
+
+### Setup Development Environment
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create a virtual environment and install dependencies
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install development dependencies
+uv pip install -e .[dev]
+
+# Run all tests (unit + integration)
+pytest
+
+# Run only unit tests
+pytest tests/test_shortcodes.py
+
+# Run only integration tests
+pytest tests/test_lektor_integration.py -m integration
+
+# Run linting
+ruff check .
+
+# Run type checking
+mypy lektor_shortcodes
+
+# Format code
+ruff format .
+
+# Build package
+hatch build
+```
+
+### Pre-commit Hooks
+
+Install pre-commit hooks for automatic code quality checks:
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
 
 Miscellanea
 -----------
