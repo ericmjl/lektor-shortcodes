@@ -31,7 +31,7 @@ jobs:
           pre-commit-
 
     - name: Run pre-commit
-      run: uvx pre-commit run --all-files
+      run: uvx pre-commit run --all-files --hook-stage=manual
 
   test:
     runs-on: ubuntu-latest
