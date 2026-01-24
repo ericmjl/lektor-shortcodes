@@ -3,6 +3,7 @@
 # Test the scodes module directly without importing the main package
 import os
 import sys
+from typing import Any, Optional
 
 import pytest
 
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lektor_shortcodes.scodes import Parser, RenderingError, register
 
 
-def test_parser_initialization():
+def test_parser_initialization() -> None:
     """Test that parser initializes correctly."""
     parser = Parser()
     assert parser.start == "[%"
@@ -21,11 +22,13 @@ def test_parser_initialization():
     assert parser.esc_start == "\\[%"  # Check the escape start pattern
 
 
-def test_register_handler():
+def test_register_handler() -> None:
     """Test registering a shortcode handler."""
     parser = Parser()
 
-    def test_handler(context, content, pargs, kwargs):
+    def test_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return f"<div>{content or 'no content'}</div>"
 
     parser.register(test_handler, "test")
@@ -33,11 +36,13 @@ def test_register_handler():
     assert parser.tags["test"]["func"] == test_handler
 
 
-def test_parse_simple_shortcode():
+def test_parse_simple_shortcode() -> None:
     """Test parsing a simple shortcode."""
     parser = Parser()
 
-    def test_handler(context, content, pargs, kwargs):
+    def test_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return f"<div>Hello {kwargs.get('name', 'World')}</div>"
 
     parser.register(test_handler, "hello")
@@ -45,11 +50,13 @@ def test_parse_simple_shortcode():
     assert "Hello Test" in result
 
 
-def test_parse_shortcode_with_content():
+def test_parse_shortcode_with_content() -> None:
     """Test parsing a shortcode with content."""
     parser = Parser()
 
-    def test_handler(context, content, pargs, kwargs):
+    def test_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return f"<div class='{kwargs.get('class', 'default')}'>{content}</div>"
 
     parser.register(test_handler, "div", "enddiv")
@@ -58,11 +65,13 @@ def test_parse_shortcode_with_content():
     assert "This is content" in result
 
 
-def test_image_shortcode():
+def test_image_shortcode() -> None:
     """Test the image shortcode with align, image, and caption parameters."""
     parser = Parser()
 
-    def image_handler(context, content, pargs, kwargs):
+    def image_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         align = kwargs.get("align", "")
         image = kwargs.get("image", "")
         caption = kwargs.get("caption", "")
@@ -98,7 +107,7 @@ def test_image_shortcode():
     assert "<a" not in result_simple
 
 
-def test_global_register_decorator():
+def test_global_register_decorator() -> None:
     """Test the global register decorator function."""
     from lektor_shortcodes.scodes import globalends, globaltags
 
@@ -107,7 +116,9 @@ def test_global_register_decorator():
     globalends.clear()
 
     @register("testglobal")
-    def simple_handler(context, content, pargs, kwargs):
+    def simple_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return "<p>Global shortcode</p>"
 
     # Verify handler was registered globally
@@ -117,7 +128,9 @@ def test_global_register_decorator():
 
     # Test with end tag
     @register("blockglobal", "endblockglobal")
-    def block_handler(context, content, pargs, kwargs):
+    def block_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return f"<div>{content}</div>"
 
     assert "blockglobal" in globaltags
@@ -129,11 +142,13 @@ def test_global_register_decorator():
     globalends.clear()
 
 
-def test_error_handling_in_shortcode():
+def test_error_handling_in_shortcode() -> None:
     """Test that exceptions in shortcode handlers are properly wrapped."""
     parser = Parser()
 
-    def failing_handler(context, content, pargs, kwargs):
+    def failing_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         raise ValueError("Intentional test error")
 
     parser.register(failing_handler, "fail")
@@ -148,11 +163,13 @@ def test_error_handling_in_shortcode():
     assert isinstance(exc_info.value.__cause__, ValueError)
 
 
-def test_shortcode_with_positional_args():
+def test_shortcode_with_positional_args() -> None:
     """Test shortcodes with positional arguments (no key=value)."""
     parser = Parser()
 
-    def args_handler(context, content, pargs, kwargs):
+    def args_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         # pargs should contain positional arguments
         return f"<p>Args: {' '.join(pargs)}</p>"
 
@@ -163,11 +180,13 @@ def test_shortcode_with_positional_args():
     assert "three" in result
 
 
-def test_shortcode_with_mixed_args():
+def test_shortcode_with_mixed_args() -> None:
     """Test shortcodes with both positional and keyword arguments."""
     parser = Parser()
 
-    def mixed_handler(context, content, pargs, kwargs):
+    def mixed_handler(
+        context: Any, content: Optional[str], pargs: list[str], kwargs: dict[str, str]
+    ) -> str:
         return f"<p>Pargs: {len(pargs)}, Kwargs: {len(kwargs)}</p>"
 
     parser.register(mixed_handler, "mixed")

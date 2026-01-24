@@ -6,22 +6,23 @@ import pytest
 from lektor.builder import Builder
 from lektor.environment import Environment
 from lektor.project import Project
+from pytest import FixtureRequest
 
 
-@pytest.fixture(scope="module")
-def demo_site_path() -> Path:
+@pytest.fixture(scope="module")  # type: ignore[untyped-decorator]
+def demo_site_path(request: FixtureRequest) -> Path:
     """Return the path to the demo site fixture."""
     return Path(__file__).parent / "fixtures" / "demo-site"
 
 
-@pytest.fixture(scope="module")
-def lektor_project(demo_site_path: Path) -> Project:
+@pytest.fixture(scope="module")  # type: ignore[untyped-decorator]
+def lektor_project(request: FixtureRequest, demo_site_path: Path) -> Project:
     """Create a Lektor project for testing."""
     return Project.from_path(str(demo_site_path))
 
 
-@pytest.fixture(scope="module")
-def lektor_env(lektor_project: Project) -> Environment:
+@pytest.fixture(scope="module")  # type: ignore[untyped-decorator]
+def lektor_env(request: FixtureRequest, lektor_project: Project) -> Environment:
     """Create a Lektor environment with the shortcodes plugin loaded."""
     env = Environment(lektor_project)
     # The plugin is automatically discovered and loaded via entry points
@@ -35,7 +36,7 @@ def test_plugin_loads(lektor_env: Environment) -> None:
     assert lektor_env.jinja_env is not None
 
 
-@pytest.mark.integration
+@pytest.mark.integration  # type: ignore[untyped-decorator]
 def test_build_with_shortcodes(lektor_env: Environment, tmp_path: Path) -> None:
     """Test building a Lektor site with shortcodes.
 
