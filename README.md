@@ -34,11 +34,29 @@ Much easier, cleaner and less repetitive.
 Installation
 ------------
 
+### Using Lektor (Recommended)
+
 To install the plugin, just add `lektor-shortcodes` to your plugins from the
 command line:
 
 ~~~
 lektor plugins add lektor-shortcodes
+~~~
+
+### Using pip
+
+You can also install directly with pip:
+
+~~~
+pip install lektor-shortcodes
+~~~
+
+### Using uv (Development)
+
+For development, you can use uv to manage dependencies:
+
+~~~
+uv pip install -e .[dev]
 ~~~
 
 
